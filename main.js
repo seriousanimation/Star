@@ -5,45 +5,117 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoPlayer = document.getElementById('video-player');
     const asciiContainer = document.getElementById('ascii-content');
 
-    // --- GitHub URLs for your assets ---
-    const videoURL = 'https://raw.githubusercontent.com/seriousanimation/Star/main/assets/videos/video1.mp4';
-    const asciiURL = 'https://raw.githubusercontent.com/seriousanimation/Star/main/assets/ASCII/example2.html';
+    // --- 1. ASCII ANIMATION SETUP ---
 
+    // For a real animation, you need frames. Since you don't have a source,
+    // I've created this sample rocket animation. You should replace this
+    // with your own frames, perhaps loaded from a JSON file.
+    const asciiFrames = [
+        `
+        /\\
+       /  \\
+      /    \\
+     |      |
+     |      |
+    /|      |\\
+   / |      | \\
+  /  |      |  \\
+ |  /|      |\\  |
+ | / |      | \\ |
+ |/  |      |  \\|
+ *------------*
+ /    /\\    \\
+/    /  \\    \\
+*---*----*---*
+    `,
+        `
 
-    // --- Load Content ---
+        /\\
+       /  \\
+      /    \\
+     |      |
+    /|      |\\
+   / |      | \\
+  /  |      |  \\
+ |  /|      |\\  |
+ | / |      | \\ |
+ |/  |      |  \\|
+ *------------*
+ /    /\\    \\
+/    /  \\    \\
+*---*----*---*
+    `,
+        `
+        /\\
+       /  \\
+      /    \\
+     |      |
+     |      |
+    /|      |\\
+   / |      | \\
+  /  |      |  \\
+ |  /|      |\\  |
+ | / |      | \\ |
+ |/  |      |  \\|
+ *------------*
+/炽/\\炽\\
+/    /  \\    \\
+*---*----*---*
+    `
+    ];
 
-    // Set the video source
-    videoPlayer.src = videoURL;
+    let animationInterval = null;
+    let currentFrame = 0;
 
-    // Fetch and display the ASCII animation
-    fetch(asciiURL)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.text();
-        })
-        .then(data => {
-            // FIX: Use .innerHTML instead of .textContent to render the <pre> tag from the source file.
-            asciiContainer.innerHTML = data;
-        })
-        .catch(error => {
-            console.error('Error fetching ASCII content:', error);
-            asciiContainer.innerHTML = 'Failed to load ASCII content.';
-        });
+    function playAsciiAnimation() {
+        if (animationInterval) return; // Don't start if already running
 
+        animationInterval = setInterval(() => {
+            asciiContainer.textContent = asciiFrames[currentFrame];
+            currentFrame = (currentFrame + 1) % asciiFrames.length;
+        }, 150); // Change 150ms to control animation speed
+    }
 
-    // --- Click Interaction ---
+    function stopAsciiAnimation() {
+        clearInterval(animationInterval);
+        animationInterval = null;
+    }
+
+    // --- 2. DYNAMIC ZOOM-TO-FIT ---
+
+    function calculateAndApplyZoom() {
+        if (!world.classList.contains('panels-visible')) {
+            world.style.transform = 'scale(1)';
+            return;
+        }
+
+        const viewportWidth = window.innerWidth;
+        // Get the total width of all panels and gaps
+        const worldWidth = world.scrollWidth; 
+        
+        // Calculate the scale needed to fit the world in the viewport
+        // The 0.9 provides a 10% padding around the edges
+        const requiredScale = (viewportWidth / worldWidth) * 0.9;
+
+        world.style.transform = `scale(${requiredScale})`;
+    }
+
+    // --- 3. CLICK AND RESIZE HANDLERS ---
+
     mainPanel.addEventListener('click', () => {
-        // Toggle the 'panels-visible' class on the world container
         const isVisible = world.classList.toggle('panels-visible');
 
-        // Play/pause video when panels are shown/hidden for better performance
         if (isVisible) {
             videoPlayer.play();
+            playAsciiAnimation();
         } else {
             videoPlayer.pause();
-            videoPlayer.currentTime = 0; // Optional: rewind video when hidden
+            stopAsciiAnimation();
         }
+        
+        // We need to wait for the CSS transition to finish before calculating the zoom
+        setTimeout(calculateAndApplyZoom, 50); 
     });
+
+    window.addEventListener('resize', calculateAndApplyZoom);
 });
