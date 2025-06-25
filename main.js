@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const asciiContainer = document.getElementById('ascii-content');
 
     // --- GitHub URLs for your assets ---
-    // Note: These URLs must point to the *raw* file content.
     const videoURL = 'https://raw.githubusercontent.com/seriousanimation/Star/main/assets/videos/video1.mp4';
     const asciiURL = 'https://raw.githubusercontent.com/seriousanimation/Star/main/assets/ASCII/example2.html';
 
@@ -25,25 +24,26 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.text();
         })
         .then(data => {
-            // We inject the fetched text directly into our <pre> tag
-            asciiContainer.textContent = data;
+            // FIX: Use .innerHTML instead of .textContent to render the <pre> tag from the source file.
+            asciiContainer.innerHTML = data;
         })
         .catch(error => {
             console.error('Error fetching ASCII content:', error);
-            asciiContainer.textContent = 'Failed to load ASCII content.';
+            asciiContainer.innerHTML = 'Failed to load ASCII content.';
         });
 
 
     // --- Click Interaction ---
     mainPanel.addEventListener('click', () => {
         // Toggle the 'panels-visible' class on the world container
-        world.classList.toggle('panels-visible');
+        const isVisible = world.classList.toggle('panels-visible');
 
-        // Optional: Play/pause video when panels are shown/hidden
-        if (world.classList.contains('panels-visible')) {
+        // Play/pause video when panels are shown/hidden for better performance
+        if (isVisible) {
             videoPlayer.play();
         } else {
             videoPlayer.pause();
+            videoPlayer.currentTime = 0; // Optional: rewind video when hidden
         }
     });
 });
