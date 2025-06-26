@@ -1,110 +1,130 @@
-/* Basic Setup */
-body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background-color: #f0f0f0;
-    font-family: Arial, sans-serif;
-}
+document.addEventListener('DOMContentLoaded', () => {
 
-#viewport {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+    const world = document.getElementById('world');
+    const mainPanel = document.getElementById('mainPanel');
+    const videoPlayer = document.getElementById('video-player');
+    const asciiContainer = document.getElementById('ascii-content');
+    const sidePanel = document.querySelector('.video-panel'); // A panel to watch for animation end
 
-/* The "world" is now a flex container */
-#world {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 30px; /* The space between panels when visible */
-    transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
-    transform-origin: center center;
-}
+    // --- ASCII ANIMATION SETUP ---
+    const asciiFrames = [
+        `
+        /\\
+       /  \\
+      /    \\
+     |      |
+     |      |
+    /|      |\\
+   / |      | \\
+  /  |      |  \\
+ |  /|      |\\  |
+ | / |      | \\ |
+ |/  |      |  \\|
+ *------------*
+ /    /\\    \\
+/    /  \\    \\
+*---*----*---*
+    `,
+        `
 
-/* --- Panel Styling (Now Proportional) --- */
-.panel {
-    height: 280px; /* Set a fixed height for all panels */
-    flex-shrink: 0; /* Prevent panels from shrinking */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start; /* Align content to the top */
-    padding: 15px;
-    box-sizing: border-box;
+        /\\
+       /  \\
+      /    \\
+     |      |
+    /|      |\\
+   / |      | \\
+  /  |      |  \\
+ |  /|      |\\  |
+ | / |      | \\ |
+ |/  |      |  \\|
+ *------------*
+ /    /\\    \\
+/    /  \\    \\
+*---*----*---*
+    `,
+        `
+        /\\
+       /  \\
+      /    \\
+     |      |
+     |      |
+    /|      |\\
+   / |      | \\
+  /  |      |  \\
+ |  /|      |\\  |
+ | / |      | \\ |
+ |/  |      |  \\|
+ *------------*
+/炽/\\炽\\
+/    /  \\    \\
+*---*----*---*
+    `
+    ];
+    let animationInterval = null;
+    let currentFrame = 0;
+
+    function playAsciiAnimation() {
+        if (animationInterval) return;
+        animationInterval = setInterval(() => {
+            asciiContainer.textContent = asciiFrames[currentFrame];
+            currentFrame = (currentFrame + 1) % asciiFrames.length;
+        }, 150);
+    }
+
+    function stopAsciiAnimation() {
+        clearInterval(animationInterval);
+        animationInterval = null;
+    }
+
+    // --- DYNAMIC ZOOM-TO-FIT ---
+    function calculateAndApplyZoom() {
+        const viewportWidth = window.innerWidth;
+        const worldWidth = world.scrollWidth;
+        
+        // Don't try to calculate if the world has no width
+        if (worldWidth === 0) return;
+
+        const requiredScale = (viewportWidth / worldWidth) * 0.9;
+        world.style.transform = `scale(${requiredScale})`;
+    }
     
-    background: linear-gradient(to bottom, #ffffff, #e0e0e0);
-    border: 1px solid #c0c0c0;
-    border-radius: 15px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.15);
-    transform: translateZ(0); /* GPU layer fix */
-}
+    // --- EVENT HANDLERS ---
+    
+    // This function runs when the slide-out animation is finished
+    function onTransitionEnd(event) {
+        // We only care when the 'max-width' animation finishes
+        if (event.propertyName === 'max-width') {
+            calculateAndApplyZoom();
+            // Important: Remove the listener so it doesn't fire again
+            sidePanel.removeEventListener('transitionend', onTransitionEnd);
+        }
+    }
 
-.panel h2, .panel h3 {
-    width: 100%;
-    margin: 0 0 10px 0;
-    padding-bottom: 5px;
-    color: #333;
-    border-bottom: 1px solid #ccc;
-}
+    mainPanel.addEventListener('click', () => {
+        // Check the state BEFORE we toggle the class
+        const isBecomingVisible = !world.classList.contains('panels-visible');
+        world.classList.toggle('panels-visible');
 
-.main-panel {
-    position: relative;
-    width: 400px; /* The main panel can keep a fixed width */
-    cursor: pointer;
-    z-index: 20;
-}
+        if (isBecomingVisible) {
+            // If panels are sliding OUT:
+            videoPlayer.play();
+            playAsciiAnimation();
+            // Add a one-time event listener to run the zoom calculation
+            // precisely when the slide-out animation has finished.
+            sidePanel.addEventListener('transitionend', onTransitionEnd);
+        } else {
+            // If panels are sliding IN:
+            videoPlayer.pause();
+            stopAsciiAnimation();
+            // Immediately reset the zoom to 1
+            world.style.transform = 'scale(1)';
+        }
+    });
 
-.main-panel .panel-tab {
-    position: absolute;
-    right: -30px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 30px;
-    height: 80px;
-    background: linear-gradient(to right, #d0b084, #c0a074);
-    border-radius: 0 10px 10px 0;
-    box-shadow: 5px 3px 10px rgba(0,0,0,0.1);
-}
-
-/* --- Content Styling --- */
-video, pre {
-    display: block;
-    width: auto; /* Let the width be determined by the height and aspect ratio */
-    height: 100%;
-    border-radius: 8px;
-    background-color: #000;
-}
-
-pre {
-    color: #00ff00;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 8px; /* Adjust font-size to fit your art */
-    line-height: 1.0;
-    padding: 10px;
-    box-sizing: border-box;
-    overflow: hidden;
-}
-
-/* --- Hide/Show Animation --- */
-.video-panel, .ascii-panel {
-    max-width: 0;
-    padding: 0;
-    border-width: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: max-width 0.8s ease, padding 0.5s ease, opacity 0.5s ease, border-width 0.5s ease;
-}
-
-#world.panels-visible .video-panel,
-#world.panels-visible .ascii-panel {
-    max-width: 500px; /* Animate to a max-width; actual width is set by content */
-    padding: 15px;
-    border-width: 1px;
-    opacity: 1;
-}
+    window.addEventListener('resize', () => {
+        // Only recalculate the zoom on resize IF the panels are already visible
+        if (world.classList.contains('panels-visible')) {
+            calculateAndApplyZoom();
+        }
+    });
+});
