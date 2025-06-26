@@ -6,23 +6,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoPlayer2 = document.getElementById('video-player-2');
     const leftPanelContainer = document.querySelector('.left-panels');
     
-    // CHANGE: Get the SVG path elements
     const wire1 = document.getElementById('wire1');
     const wire2 = document.getElementById('wire2');
 
-    // --- NEW: Function to draw connector wires ---
+    // --- Function to draw connector wires ---
     function updateWires() {
+        // Hide wires if panels are not visible
         if (!world.classList.contains('panels-visible')) {
-            return; // Don't draw if panels are hidden
+            wire1.setAttribute('d', '');
+            wire2.setAttribute('d', '');
+            return;
         }
 
-        // Get the bounding boxes of the panels
         const mainRect = mainPanel.getBoundingClientRect();
         const video1Rect = document.querySelector('.video-panel').getBoundingClientRect();
         const video2Rect = document.querySelector('.video-panel-2').getBoundingClientRect();
         const worldRect = world.getBoundingClientRect();
 
-        // Calculate connection points relative to the top-left of the #world div
         const startX = mainRect.left + mainRect.width - worldRect.left;
         const startY = mainRect.top + mainRect.height / 2 - worldRect.top;
 
@@ -32,13 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const end2X = video2Rect.left + video2Rect.width - worldRect.left;
         const end2Y = video2Rect.top + video2Rect.height / 2 - worldRect.top;
 
-        // Create the SVG path string for a smooth curve (cubic Bézier)
-        // The control points are offset horizontally to create the "S" shape
         const controlOffset = 100;
         const path1_d = `M ${startX},${startY} C ${startX + controlOffset},${startY} ${end1X - controlOffset},${end1Y} ${end1X},${end1Y}`;
         const path2_d = `M ${startX},${startY} C ${startX + controlOffset},${startY} ${end2X - controlOffset},${end2Y} ${end2X},${end2Y}`;
 
-        // Apply the new path data to the SVG elements
         wire1.setAttribute('d', path1_d);
         wire2.setAttribute('d', path2_d);
     }
@@ -54,10 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function onTransitionEnd(event) {
-        if (event.target === leftPanelContainer && event.propertyName === 'max-width') {
+        // FIX: Only calculate zoom and wires AFTER the transition has finished AND the panels are visible.
+        // This prevents the function from running when the panels are retracting.
+        if (world.classList.contains('panels-visible') && event.target === leftPanelContainer && event.propertyName === 'max-width') {
             calculateAndApplyZoom();
-            // CHANGE: Update the wires after the zoom has been applied
-            setTimeout(updateWires, 50); // Small delay to ensure zoom is rendered
+            setTimeout(updateWires, 50); // Small delay to ensure zoom is rendered before drawing wires
         }
     }
 
@@ -71,7 +69,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             videoPlayer1.pause();
             videoPlayer2.pause();
+            // Reset the zoom to its default state immediately.
             world.style.transform = 'scale(1)';
+            // Hide the wires immediately.
+            updateWires();
         }
     });
 
