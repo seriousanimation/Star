@@ -5,9 +5,19 @@ body, html {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #f0f0f0;
-    font-family: Arial, sans-serif;
+    /* CHANGE: Removed background-color to make canvas visible */
 }
+
+/* CHANGE: New styles for the background canvas */
+#generative-background {
+    position: fixed; /* Keep it fixed in the background */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Position it behind everything else */
+}
+
 
 #viewport {
     width: 100%;
@@ -15,18 +25,17 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: grab; /* Indicate that the canvas is pannable */
+    cursor: grab;
 }
 
-/* CHANGE: The "world" is no longer a flex container itself. */
-/* It's now a pannable container for vertically stacked topic rows. */
+/* The "world" is a pannable container for vertically stacked topic rows. */
 #world {
     position: relative;
-    transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); /* Faster, smoother transition */
+    transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
     transform-origin: center center;
 }
 
-/* CHANGE: New rule for grouping a topic and its side panels */
+/* New rule for grouping a topic and its side panels */
 .topic-row {
     display: flex;
     justify-content: center;
@@ -70,7 +79,8 @@ body, html {
     justify-content: flex-start;
     padding: 15px;
     box-sizing: border-box;
-    background: linear-gradient(to bottom, #ffffff, #e0e0e0);
+    /* CHANGE: Added a semi-transparent background to see the canvas behind it */
+    background: linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(224,224,224,0.9));
     border: 1px solid #c0c0c0;
     border-radius: 15px;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.15);
@@ -114,10 +124,10 @@ body, html {
     box-shadow: 5px 3px 10px rgba(0,0,0,0.1);
 }
 
-/* CHANGE: Styling for the new panel */
+/* Styling for the new panel */
 #second-topic-panel {
-    width: 450px; /* Give it a slightly different size */
-    margin: 80px auto 0; /* Add top margin to space it out */
+    width: 450px;
+    margin: 80px auto 0;
 }
 
 /* --- Content Styling --- */
