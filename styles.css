@@ -1,121 +1,32 @@
-/* Basic Setup */
-body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden; /* Prevents scrollbars on the body */
-    background-color: #f0f0f0;
-    font-family: Arial, sans-serif;
-}
-
-/* The viewport for our scene */
-#viewport {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* The "world" container that will be zoomed */
-#world {
-    position: relative;
-    transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smooth zoom transition */
-}
-
-/* --- Panel Styling --- */
-.panel {
-    position: relative;
-    width: 400px;
-    height: 250px;
-    background: linear-gradient(to bottom, #ffffff, #e0e0e0);
-    border: 1px solid #c0c0c0;
-    border-radius: 15px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    z-index: 10;
-    transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.8s ease;
-}
-
-/* The decorative tab on the main panel */
-.main-panel .panel-tab {
-    position: absolute;
-    right: -30px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 30px;
-    height: 80px;
-    background: linear-gradient(to right, #d0b084, #c0a074);
-    border-radius: 0 10px 10px 0;
-    box-shadow: 5px 3px 10px rgba(0,0,0,0.1);
-}
-
-.panel-content {
-    background-color: rgba(60, 60, 60, 0.8);
-    color: white;
-    width: 90%;
-    height: 85%;
-    border-radius: 8px;
-    padding: 15px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-}
-
-.panel-content h2, .panel-content h3 {
-    margin: 0 0 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.5);
-    padding-bottom: 5px;
-}
-
-/* The main clickable panel */
-.main-panel {
-    cursor: pointer;
-    z-index: 20; /* Ensure it's on top initially */
-}
-
-/* --- Positioning for Hidden Panels --- */
-.video-panel, .ascii-panel {
-    position: absolute;
-    top: 0;
-    opacity: 0;
-    transform: translateY(20px) scale(0.9); /* Start slightly down, smaller, and invisible */
-}
-
-/* --- Active State (Triggered by JavaScript) --- */
-#world.panels-visible {
-    transform: scale(0.75); /* Zoom out the entire world */
-}
-
-#world.panels-visible .video-panel {
-    opacity: 1;
-    transform: translateX(-115%); /* Slide out to the left */
-}
-
-#world.panels-visible .ascii-panel {
-    opacity: 1;
-    transform: translateX(115%); /* Slide out to the right */
-}
-
-/* --- Media Styling --- */
+/* --- Content Styling --- */
 #video-player {
-    width: 100%;
+    display: block;
+    width: auto;
     height: 100%;
-    border-radius: 4px;
+    border-radius: 8px;
+    background-color: #000;
 }
 
+/* FIX: The Container for the ASCII art */
 #ascii-content {
-    white-space: pre;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 4px; /* ASCII art often needs a tiny font */
-    overflow: hidden;
-    color: #00ff00; /* Classic terminal green */
-    background-color: #000;
-    padding: 5px;
-    border-radius: 4px;
+    display: flex; /* Use flexbox to center the pre tag */
+    justify-content: center;
+    align-items: center;
+    width: 100%;
     height: 100%;
+    overflow: hidden;
+    background-color: #000;
+    border-radius: 8px;
+}
+
+/* FIX: The <pre> tag that holds the art */
+#ascii-content pre {
+    color: #4CAF50;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 5px; /* You may need to adjust this for best fit */
+    line-height: 1.0;
+    white-space: pre;
+    margin: 0;
+    overflow: hidden; /* Hide any characters that might overflow */
+    text-align: left; /* Ensure text is aligned to the left */
 }
