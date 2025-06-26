@@ -7,18 +7,20 @@ body, html {
     overflow: hidden;
 }
 
-/* CHANGE: CSS selector updated to match the correct canvas ID */
+/* CHANGE: Corrected canvas layering */
 #bg-canvas {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -1;
+    z-index: 1; /* Place it on the first layer */
 }
 
-
+/* CHANGE: Corrected viewport layering */
 #viewport {
+    position: relative; /* Required for z-index to work */
+    z-index: 2;         /* Place the viewport on a layer above the canvas */
     width: 100%;
     height: 100%;
     display: flex;
@@ -27,12 +29,14 @@ body, html {
     cursor: grab;
 }
 
+/* The "world" is a pannable container for vertically stacked topic rows. */
 #world {
     position: relative;
     transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
     transform-origin: center center;
 }
 
+/* New rule for grouping a topic and its side panels */
 .topic-row {
     display: flex;
     justify-content: center;
@@ -40,6 +44,7 @@ body, html {
     gap: 30px;
 }
 
+/* --- SVG Connector Wires --- */
 #connector-svg {
     position: absolute;
     top: 0;
@@ -64,6 +69,8 @@ body, html {
     stroke-dashoffset: 0;
 }
 
+
+/* --- Panel Styling --- */
 .panel {
     height: 280px;
     flex-shrink: 0;
@@ -78,8 +85,9 @@ body, html {
     border-radius: 15px;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.15);
     transform: translateZ(0);
-    z-index: 20;
+    z-index: 20; /* Panels are on a high layer */
 }
+/* All panel headers */
 .panel h2, .panel h3 {
     width: 100%;
     margin: 0 0 10px 0;
@@ -88,6 +96,7 @@ body, html {
     border-bottom: 1px solid #ccc;
     flex-shrink: 0;
 }
+/* All panel paragraph content */
 .panel p {
     font-size: 1.2em;
     flex-grow: 1;
@@ -115,11 +124,13 @@ body, html {
     box-shadow: 5px 3px 10px rgba(0,0,0,0.1);
 }
 
+/* Styling for the new panel */
 #second-topic-panel {
     width: 450px;
     margin: 80px auto 0;
 }
 
+/* --- Content Styling --- */
 .video-container {
     width: 100%;
     height: 100%;
@@ -137,6 +148,8 @@ body, html {
     width: 373px;
 }
 
+
+/* --- Hide/Show Animation --- */
 .left-panels, .right-panels {
     display: flex;
     transition: max-width 0.8s ease;
