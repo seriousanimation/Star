@@ -5,17 +5,16 @@ body, html {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    /* CHANGE: Removed background-color to make canvas visible */
 }
 
-/* CHANGE: New styles for the background canvas */
-#generative-background {
-    position: fixed; /* Keep it fixed in the background */
+/* CHANGE: CSS selector updated to match the correct canvas ID */
+#bg-canvas {
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -1; /* Position it behind everything else */
+    z-index: -1;
 }
 
 
@@ -28,14 +27,12 @@ body, html {
     cursor: grab;
 }
 
-/* The "world" is a pannable container for vertically stacked topic rows. */
 #world {
     position: relative;
     transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
     transform-origin: center center;
 }
 
-/* New rule for grouping a topic and its side panels */
 .topic-row {
     display: flex;
     justify-content: center;
@@ -43,7 +40,6 @@ body, html {
     gap: 30px;
 }
 
-/* --- SVG Connector Wires --- */
 #connector-svg {
     position: absolute;
     top: 0;
@@ -68,8 +64,6 @@ body, html {
     stroke-dashoffset: 0;
 }
 
-
-/* --- Panel Styling --- */
 .panel {
     height: 280px;
     flex-shrink: 0;
@@ -79,7 +73,6 @@ body, html {
     justify-content: flex-start;
     padding: 15px;
     box-sizing: border-box;
-    /* CHANGE: Added a semi-transparent background to see the canvas behind it */
     background: linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(224,224,224,0.9));
     border: 1px solid #c0c0c0;
     border-radius: 15px;
@@ -87,7 +80,6 @@ body, html {
     transform: translateZ(0);
     z-index: 20;
 }
-/* All panel headers */
 .panel h2, .panel h3 {
     width: 100%;
     margin: 0 0 10px 0;
@@ -96,7 +88,6 @@ body, html {
     border-bottom: 1px solid #ccc;
     flex-shrink: 0;
 }
-/* All panel paragraph content */
 .panel p {
     font-size: 1.2em;
     flex-grow: 1;
@@ -124,13 +115,11 @@ body, html {
     box-shadow: 5px 3px 10px rgba(0,0,0,0.1);
 }
 
-/* Styling for the new panel */
 #second-topic-panel {
     width: 450px;
     margin: 80px auto 0;
 }
 
-/* --- Content Styling --- */
 .video-container {
     width: 100%;
     height: 100%;
@@ -148,8 +137,6 @@ body, html {
     width: 373px;
 }
 
-
-/* --- Hide/Show Animation --- */
 .left-panels, .right-panels {
     display: flex;
     transition: max-width 0.8s ease;
