@@ -1,17 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- CHANGE: Initialize the generative background ---
-    // This line calls the function from generativebackground.js to start the animation.
-    // Make sure the function name matches what's in the guide you provided.
-    // Assuming the function is called 'initGenerativeBackground'.
-    if (typeof initGenerativeBackground === 'function') {
-        initGenerativeBackground();
+    // CHANGE: Corrected the function name to match the one in your script.
+    if (typeof startGenerativeBG === 'function') {
+        startGenerativeBG();
     } else {
-        console.error("The generative background script did not provide an init function.");
+        console.error("The generative background script did not provide the 'startGenerativeBG' function.");
     }
 
-
-    // --- The rest of your main.js file remains exactly the same ---
     const viewport = document.getElementById('viewport');
     const world = document.getElementById('world');
     const mainPanel = document.getElementById('mainPanel');
