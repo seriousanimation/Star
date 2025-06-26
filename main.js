@@ -5,6 +5,7 @@ function startGenerativeBG() {
 }
 
 window.onload = () => {
+    // This check is in case the background script fails to load.
     if (typeof startGenerativeBG === 'function') {
         startGenerativeBG();
     }
@@ -19,8 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let scale = 1;
     let panY = 0;
-    let isZoomed = false; // Keep track of zoomed state
-    let activeRow = null; // Keep track of the currently active row
+    let isZoomed = false;
+    let activeRow = null;
 
     // --- MAIN TRANSFORM FUNCTION ---
     function applyTransform() {
@@ -48,10 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const startX = mainRect.left + mainRect.width / 2 - worldRect.left;
         const startY = mainRect.top + mainRect.height / 2 - worldRect.top;
-
         const end1X = leftRect.left + leftRect.width / 2 - worldRect.left;
         const end1Y = leftRect.top + leftRect.height / 2 - worldRect.top;
-
         const end2X = rightRect.left + rightRect.width / 2 - worldRect.left;
         const end2Y = rightRect.top + rightRect.height / 2 - worldRect.top;
 
@@ -73,24 +72,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const viewportHeight = viewport.clientHeight;
         const rowRect = row.getBoundingClientRect();
         const worldRect = world.getBoundingClientRect();
-
+        
         // Calculate Y position to center the row
         const targetY = (viewportHeight / 2) - (rowRect.top - worldRect.top + rowRect.height / 2);
         panY = targetY;
 
-        // Calculate scale to fit the expanded row
-        const viewportWidth = viewport.clientWidth;
-        const rowWidth = row.scrollWidth;
-        scale = (viewportWidth / rowWidth) * 0.9;
-        
+        // CHANGE: The zoom calculation is REMOVED from this function.
+        // We only apply the pan transform for now. The zoom will be handled later.
         applyTransform();
     }
 
     function resetFocus() {
         isZoomed = false;
         activeRow = null;
-        panY = 0; // Reset vertical pan
-        scale = 1; // Reset zoom
+        panY = 0;
+        scale = 1;
         applyTransform();
     }
     
@@ -103,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
         mainPanel.addEventListener('click', () => {
             const isBecomingVisible = !row.classList.contains('panels-visible');
             
-            // If another row is active, close it first
             if (activeRow && activeRow !== row) {
                 activeRow.classList.remove('panels-visible');
                 updateWires(activeRow, false);
@@ -121,9 +116,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Listen for the animation to end to draw the wires
+        // Listen for the animation to end to perform final actions
         leftPanelContainer.addEventListener('transitionend', (event) => {
             if (row.classList.contains('panels-visible') && event.propertyName === 'max-width') {
+                // CHANGE: The zoom calculation logic is now HERE.
+                // It runs only after the panels have finished expanding.
+                const viewportWidth = viewport.clientWidth;
+                const rowWidth = row.scrollWidth;
+                scale = (viewportWidth / rowWidth) * 0.9;
+                applyTransform();
+
+                // Update wires after the final zoom is applied
                 updateWires(row, true);
             }
         });
@@ -132,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- MOUSE WHEEL PANNING ---
     viewport.addEventListener('wheel', (event) => {
         event.preventDefault();
-        // Disable vertical panning when zoomed in on a topic
         if (isZoomed) return;
 
         panY -= event.deltaY;
@@ -151,7 +153,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- RESIZE HANDLER ---
     window.addEventListener('resize', () => {
         if (isZoomed && activeRow) {
+            // Re-center and re-calculate zoom on resize
             focusOnRow(activeRow);
+            const viewportWidth = viewport.clientWidth;
+            const rowWidth = activeRow.scrollWidth;
+            scale = (viewportWidth / rowWidth) * 0.9;
+            applyTransform();
         }
     });
 });
