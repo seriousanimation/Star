@@ -3,27 +3,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const world = document.getElementById('world');
     const mainPanel = document.getElementById('mainPanel');
     const videoPlayer = document.getElementById('video-player');
-    const asciiContainer = document.getElementById('ascii-content');
-    const sidePanel = document.querySelector('.video-panel');
+    // FIX: This ID now correctly points directly to the <pre> tag.
+    const asciiArtPreTag = document.getElementById('ascii-content');
+    // FIX: We now target the .left-panels container for the transition event.
+    const leftPanelContainer = document.querySelector('.left-panels');
 
     // --- 1. TRUE FRAME-BASED ANIMATION SETUP ---
 
     const asciiURL = 'https://raw.githubusercontent.com/seriousanimation/Star/main/assets/ASCII/example2.html';
     let animationInterval = null;
-    let animationFrames = []; // This will hold the 191 frames from your file.
+    let animationFrames = [];
     let currentFrame = 0;
 
-    // This function runs the animation loop.
     function playAsciiAnimation() {
-        // Don't start if it's already running or if there are no frames.
         if (animationInterval || animationFrames.length === 0) return;
 
         animationInterval = setInterval(() => {
-            // Set the content of the <pre> tag to the next frame.
-            // The <pre> tag is inside the asciiContainer div.
-            asciiContainer.querySelector('pre').textContent = animationFrames[currentFrame];
-            currentFrame = (currentFrame + 1) % animationFrames.length; // Loop back to the start.
-        }, 80); // Adjust speed in milliseconds (e.g., 80ms is ~12fps)
+            // FIX: Directly set the textContent of the <pre> tag.
+            asciiArtPreTag.textContent = animationFrames[currentFrame];
+            currentFrame = (currentFrame + 1) % animationFrames.length;
+        }, 80);
     }
 
     function stopAsciiAnimation() {
@@ -36,39 +35,28 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch(asciiURL)
         .then(response => response.text())
         .then(htmlContent => {
-            // Create a temporary div to safely parse the fetched HTML
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = htmlContent;
-
-            // Find the <pre> tag within the loaded content
-            const preTag = tempDiv.querySelector('pre');
-            if (!preTag) {
+            const preTagFromFile = tempDiv.querySelector('pre');
+            if (!preTagFromFile) {
                 console.error("Could not find a <pre> tag in the fetched HTML.");
                 return;
             }
-
-            // This is the special, invisible character that separates your 191 frames.
             const frameDelimiter = '\u001e';
+            animationFrames = preTagFromFile.textContent.split(frameDelimiter);
             
-            // Split the single block of text into an array of frames.
-            animationFrames = preTag.textContent.split(frameDelimiter);
-            
-            // Prepare the display by showing the first frame initially.
-            // First, make sure our on-page container has a <pre> tag.
-            if (!asciiContainer.querySelector('pre')) {
-                 asciiContainer.appendChild(document.createElement('pre'));
-            }
-            asciiContainer.querySelector('pre').textContent = animationFrames[0];
+            // FIX: Directly set the textContent of our page's <pre> tag to the first frame.
+            asciiArtPreTag.textContent = animationFrames[0];
             
             console.log(`Successfully loaded ${animationFrames.length} animation frames.`);
         })
         .catch(error => {
             console.error("Failed to fetch ASCII content:", error);
-            asciiContainer.innerHTML = "<pre>Error loading content.</pre>";
+            // FIX: Directly set the error message on the <pre> tag.
+            asciiArtPreTag.textContent = "Error loading content.";
         });
 
-
-    // --- 3. EVENT HANDLERS (No changes needed here) ---
+    // --- 3. EVENT HANDLERS ---
     
     function calculateAndApplyZoom() {
         const viewportWidth = window.innerWidth;
@@ -79,9 +67,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function onTransitionEnd(event) {
-        if (event.propertyName === 'max-width') {
+        // FIX: Ensure we only run this for the container's max-width transition.
+        if (event.target === leftPanelContainer && event.propertyName === 'max-width') {
             calculateAndApplyZoom();
-            sidePanel.removeEventListener('transitionend', onTransitionEnd);
+            // We no longer need to remove the listener as it's specific.
         }
     }
 
@@ -92,13 +81,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isBecomingVisible) {
             videoPlayer.play();
             playAsciiAnimation();
-            sidePanel.addEventListener('transitionend', onTransitionEnd);
         } else {
             videoPlayer.pause();
             stopAsciiAnimation();
             world.style.transform = 'scale(1)';
         }
     });
+
+    // FIX: We attach the transitionend listener once and leave it.
+    leftPanelContainer.addEventListener('transitionend', onTransitionEnd);
 
     window.addEventListener('resize', () => {
         if (world.classList.contains('panels-visible')) {
