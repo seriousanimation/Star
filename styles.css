@@ -4,7 +4,7 @@ body, html {
     padding: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Prevents scrollbars on the body */
+    overflow: hidden;
     background-color: #f0f0f0;
     font-family: Arial, sans-serif;
 }
@@ -17,32 +17,31 @@ body, html {
     align-items: center;
 }
 
-/* The "world" is now a flex container */
+/* The "world" is the main flex container */
 #world {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 30px; /* The space between panels when visible */
+    gap: 30px;
     transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
     transform-origin: center center;
 }
 
 /* --- Panel Styling (Proportional) --- */
 .panel {
-    height: 280px; /* Set a fixed height for all panels */
-    flex-shrink: 0; /* Prevent panels from shrinking */
+    height: 280px;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* Align content to the top */
+    justify-content: flex-start;
     padding: 15px;
     box-sizing: border-box;
-    
     background: linear-gradient(to bottom, #ffffff, #e0e0e0);
     border: 1px solid #c0c0c0;
     border-radius: 15px;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.15);
-    transform: translateZ(0); /* GPU layer fix for video */
+    transform: translateZ(0);
 }
 
 .panel h2, .panel h3 {
@@ -55,7 +54,7 @@ body, html {
 
 .main-panel {
     position: relative;
-    width: 400px; /* The main panel can keep a fixed width */
+    width: 400px;
     cursor: pointer;
     z-index: 20;
 }
@@ -81,9 +80,8 @@ body, html {
     background-color: #000;
 }
 
-/* FIX: The Container for the ASCII art */
 #ascii-content {
-    display: flex; /* Use flexbox to center the pre tag */
+    display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
@@ -93,30 +91,35 @@ body, html {
     border-radius: 8px;
 }
 
-/* FIX: The <pre> tag that holds the art */
 #ascii-content pre {
     color: #4CAF50;
     font-family: 'Courier New', Courier, monospace;
-    font-size: 5px; /* You may need to adjust this for best fit */
+    font-size: 5px;
     line-height: 1.0;
     white-space: pre;
     margin: 0;
-    overflow: hidden; /* Hide any characters that might overflow */
-    text-align: left; /* Ensure text is aligned to the left */
+    overflow: hidden;
+    text-align: left;
 }
 
 /* --- Hide/Show Animation --- */
-.video-panel, .ascii-panel {
+
+/* FIX: The new wrapper containers for the side panels */
+.left-panels, .right-panels {
+    display: flex;
+    transition: max-width 0.8s ease;
     max-width: 0;
-    padding: 0;
-    border-width: 0;
-    opacity: 0;
     overflow: hidden;
-    transition: max-width 0.8s ease, padding 0.5s ease, opacity 0.5s ease, border-width 0.5s ease;
 }
 
-#world.panels-visible .video-panel,
-#world.panels-visible .ascii-panel {
-    max-width: 500px; /* Animate to a max-width; actual width is set by content */
-    padding: 15px;
-    border-width
+/* When panels are visible, allow the containers to expand */
+#world.panels-visible .left-panels,
+#world.panels-visible .right-panels {
+    max-width: 500px; /* Animate to a max-width */
+}
+
+/* The actual panels inside the wrappers have no transition now, their visibility is instant once the container expands */
+.video-panel, .ascii-panel {
+    width: 500px;
+    opacity: 1; /* Keep them opaque */
+}
