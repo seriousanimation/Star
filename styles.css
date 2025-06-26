@@ -29,11 +29,10 @@ body, html {
 
 #world {
     position: relative;
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); /* Smoother transition */
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: center center;
 }
 
-/* CHANGE: Spacing between topic rows */
 .topic-row {
     display: flex;
     justify-content: center;
@@ -41,7 +40,7 @@ body, html {
     gap: 30px;
 }
 .topic-row + .topic-row {
-    margin-top: 80px; /* Add space only between rows */
+    margin-top: 80px;
 }
 
 /* --- SVG Connector Wires --- */
@@ -64,11 +63,9 @@ body, html {
     stroke-dashoffset: 1000;
     transition: stroke-dashoffset 0.8s ease-in-out;
 }
-/* This class will now be toggled by JS */
 .connector-wire.visible {
     stroke-dashoffset: 0;
 }
-
 
 /* --- Panel Styling --- */
 .panel {
@@ -108,6 +105,7 @@ body, html {
     position: relative;
     width: 400px;
     cursor: pointer;
+    z-index: 21; /* CHANGE: Slightly higher z-index */
 }
 
 .main-panel .panel-tab {
@@ -148,7 +146,6 @@ body, html {
     max-width: 0;
     overflow: hidden;
 }
-/* This class will now be toggled by JS */
 .topic-row.panels-visible .left-panels,
 .topic-row.panels-visible .right-panels {
     max-width: 500px; 
