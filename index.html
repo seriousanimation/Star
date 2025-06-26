@@ -11,23 +11,32 @@
     <div id="viewport">
         <div id="world">
 
+            <svg id="connector-svg">
+                <path id="wire1" class="connector-wire" d=""></path>
+                <path id="wire2" class="connector-wire" d=""></path>
+            </svg>
+
             <div class="left-panels">
                 <div class="panel video-panel">
                     <h3>Video</h3>
-                    <video id="video-player-1" src="https://raw.githubusercontent.com/seriousanimation/Star/main/assets/videos/video1.mp4" muted loop playsinline></video>
+                    <div class="video-container">
+                        <video id="video-player-1" src="https://raw.githubusercontent.com/seriousanimation/Star/main/assets/videos/video1.mp4" muted loop playsinline></video>
+                    </div>
                 </div>
             </div>
 
             <div class="panel main-panel" id="mainPanel">
                 <h2>Introduction</h2>
-                <p>Text to Appear Here</p>
+                <p>Salient Points</p>
                 <div class="panel-tab"></div>
             </div>
 
             <div class="right-panels">
                 <div class="panel video-panel-2">
-                    <h3>Looping Video</h3>
-                    <video id="video-player-2" src="https://raw.githubusercontent.com/seriousanimation/Star/main/assets/videos/ASCIIMOSQUE1024.mp4" muted loop playsinline></video>
+                    <h3>Video</h3>
+                     <div class="video-container">
+                        <video id="video-player-2" src="https://raw.githubusercontent.com/seriousanimation/Star/main/assets/videos/ASCIIMOSQUE1024.mp4" muted loop playsinline></video>
+                    </div>
                 </div>
             </div>
 
