@@ -18,15 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let panY = 0;
     let isZoomed = false;
     let activeRow = null;
-    let currentTopicIndex = 0; // Keep track of which topic is centered
-    let isNavigating = false; // Flag to prevent rapid navigation
+    let currentTopicIndex = 0;
+    let isNavigating = false;
 
     function applyTransform() {
         world.style.transform = `translateY(${panY}px) scale(${scale})`;
     }
 
     function updateWires(row, show = false) {
-        // ... (This function's internal logic is unchanged)
         const mainPanel = row.querySelector('.main-panel');
         const leftVideoPanel = row.querySelector('.video-panel');
         const rightVideoPanel = row.querySelector('.video-panel-2');
@@ -78,23 +77,19 @@ document.addEventListener('DOMContentLoaded', () => {
             activeRow = null;
         }
         scale = 1;
-        // The panY will be handled by the navigateToTopic function
+        // CHANGE: Immediately apply the scale(1) transform. This ensures the zoom-out happens reliably.
+        applyTransform(); 
     }
     
-    // --- NEW: Navigation Logic ---
     function navigateToTopic(index) {
-        if (index < 0 || index >= topicRows.length) return; // Stay within bounds
+        if (index < 0 || index >= topicRows.length) return;
 
         currentTopicIndex = index;
         const targetRow = topicRows[index];
-
-        // Calculate the Y position to center the target row
         const targetY = -targetRow.offsetTop;
         
-        // If a panel is open, close it first, then move.
         if (isZoomed) {
             resetFocus();
-            // Wait for the zoom-out transition to finish before panning
             setTimeout(() => {
                 panY = targetY;
                 applyTransform();
@@ -105,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- SETUP EVENT LISTENERS FOR EACH ROW ---
     topicRows.forEach((row, index) => {
         const mainPanel = row.querySelector('.main-panel');
         const videos = row.querySelectorAll('.topic-video');
@@ -124,11 +118,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isBecomingVisible) {
                 videos.forEach(video => video.play());
                 focusOnRow(row);
-                currentTopicIndex = index; // Update current index on click
+                currentTopicIndex = index;
             } else {
                 videos.forEach(video => video.pause());
                 resetFocus();
-                navigateToTopic(index); // Re-center on the current topic after closing
+                navigateToTopic(index);
             }
         });
 
@@ -143,20 +137,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- NEW: Navigation Event Handlers ---
     function handleNavigation(direction) {
-        if (isNavigating) return; // Prevent spamming
+        if (isNavigating) return;
         isNavigating = true;
         
         const nextIndex = currentTopicIndex + direction;
         navigateToTopic(nextIndex);
         
-        setTimeout(() => { isNavigating = false; }, 1000); // 1-second cooldown
+        setTimeout(() => { isNavigating = false; }, 1000);
     }
 
     viewport.addEventListener('wheel', (event) => {
         event.preventDefault();
-        handleNavigation(event.deltaY > 0 ? 1 : -1); // 1 for down, -1 for up
+        handleNavigation(event.deltaY > 0 ? 1 : -1);
     }, { passive: false });
 
     window.addEventListener('keydown', (event) => {
@@ -169,7 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- RESIZE HANDLER ---
     window.addEventListener('resize', () => {
         if (isZoomed && activeRow) {
             focusOnRow(activeRow);
