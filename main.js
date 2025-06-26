@@ -1,91 +1,146 @@
-// The window.onload block has been removed.
-// The generativebackground.js script will start on its own.
+// This function needs to be defined globally so other scripts can find it.
+// We will call it when the window is fully loaded.
+function startGenerativeBG() {
+    // Implementation from your generativebackground.js file
+}
+
+window.onload = () => {
+    if (typeof startGenerativeBG === 'function') {
+        startGenerativeBG();
+    }
+};
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // All the code for your panels, zoom, and wires remains.
     const viewport = document.getElementById('viewport');
     const world = document.getElementById('world');
-    const mainPanel = document.getElementById('mainPanel');
-    const videoPlayer1 = document.getElementById('video-player-1');
-    const videoPlayer2 = document.getElementById('video-player-2');
-    const leftPanelContainer = document.querySelector('.left-panels');
-    const wire1 = document.getElementById('wire1');
-    const wire2 = document.getElementById('wire2');
+    const topicRows = document.querySelectorAll('.topic-row');
+    const wires = document.querySelectorAll('.connector-wire');
 
     let scale = 1;
     let panY = 0;
-    const panSpeed = 1;
+    let isZoomed = false; // Keep track of zoomed state
+    let activeRow = null; // Keep track of the currently active row
 
+    // --- MAIN TRANSFORM FUNCTION ---
     function applyTransform() {
         world.style.transform = `translateY(${panY}px) scale(${scale})`;
     }
 
-    function updateWires() {
-        if (!world.classList.contains('panels-visible')) {
-            wire1.setAttribute('d', '');
-            wire2.setAttribute('d', '');
+    // --- WIRE DRAWING LOGIC ---
+    function updateWires(row, show = false) {
+        const mainPanel = row.querySelector('.main-panel');
+        const leftVideoPanel = row.querySelector('.video-panel');
+        const rightVideoPanel = row.querySelector('.video-panel-2');
+        const wireLeft = wires[(Array.from(topicRows).indexOf(row) * 2)];
+        const wireRight = wires[(Array.from(topicRows).indexOf(row) * 2) + 1];
+
+        if (!show) {
+            wireLeft.classList.remove('visible');
+            wireRight.classList.remove('visible');
             return;
         }
+
         const mainRect = mainPanel.getBoundingClientRect();
-        const video1Rect = document.querySelector('.video-panel').getBoundingClientRect();
-        const video2Rect = document.querySelector('.video-panel-2').getBoundingClientRect();
+        const leftRect = leftVideoPanel.getBoundingClientRect();
+        const rightRect = rightVideoPanel.getBoundingClientRect();
         const worldRect = world.getBoundingClientRect();
 
-        const startX = mainRect.left + mainRect.width - worldRect.left;
+        const startX = mainRect.left + mainRect.width / 2 - worldRect.left;
         const startY = mainRect.top + mainRect.height / 2 - worldRect.top;
-        const end1X = video1Rect.left - worldRect.left;
-        const end1Y = video1Rect.top + video1Rect.height / 2 - worldRect.top;
-        const end2X = video2Rect.left + video2Rect.width - worldRect.left;
-        const end2Y = video2Rect.top + video2Rect.height / 2 - worldRect.top;
 
-        const controlOffset = 100;
-        const path1_d = `M ${startX},${startY} C ${startX + controlOffset},${startY} ${end1X - controlOffset},${end1Y} ${end1X},${end1Y}`;
+        const end1X = leftRect.left + leftRect.width / 2 - worldRect.left;
+        const end1Y = leftRect.top + leftRect.height / 2 - worldRect.top;
+
+        const end2X = rightRect.left + rightRect.width / 2 - worldRect.left;
+        const end2Y = rightRect.top + rightRect.height / 2 - worldRect.top;
+
+        const controlOffset = 150;
+        const path1_d = `M ${startX},${startY} C ${startX - controlOffset},${startY} ${end1X + controlOffset},${end1Y} ${end1X},${end1Y}`;
         const path2_d = `M ${startX},${startY} C ${startX + controlOffset},${startY} ${end2X - controlOffset},${end2Y} ${end2X},${end2Y}`;
 
-        wire1.setAttribute('d', path1_d);
-        wire2.setAttribute('d', path2_d);
+        wireLeft.setAttribute('d', path1_d);
+        wireRight.setAttribute('d', path2_d);
+        wireLeft.classList.add('visible');
+        wireRight.classList.add('visible');
     }
 
-    function calculateAndApplyZoom() {
-        const viewportWidth = window.innerWidth;
-        const worldWidth = world.scrollWidth;
-        if (worldWidth === 0) return;
+    // --- ZOOM AND FOCUS LOGIC ---
+    function focusOnRow(row) {
+        isZoomed = true;
+        activeRow = row;
+
+        const viewportHeight = viewport.clientHeight;
+        const rowRect = row.getBoundingClientRect();
+        const worldRect = world.getBoundingClientRect();
+
+        // Calculate Y position to center the row
+        const targetY = (viewportHeight / 2) - (rowRect.top - worldRect.top + rowRect.height / 2);
+        panY = targetY;
+
+        // Calculate scale to fit the expanded row
+        const viewportWidth = viewport.clientWidth;
+        const rowWidth = row.scrollWidth;
+        scale = (viewportWidth / rowWidth) * 0.9;
         
-        scale = (viewportWidth / worldWidth) * 0.9;
         applyTransform();
     }
 
-    function onTransitionEnd(event) {
-        if (world.classList.contains('panels-visible') && event.target === leftPanelContainer && event.propertyName === 'max-width') {
-            calculateAndApplyZoom();
-            setTimeout(updateWires, 50);
-        }
+    function resetFocus() {
+        isZoomed = false;
+        activeRow = null;
+        panY = 0; // Reset vertical pan
+        scale = 1; // Reset zoom
+        applyTransform();
     }
+    
+    // --- SETUP EVENT LISTENERS FOR EACH ROW ---
+    topicRows.forEach(row => {
+        const mainPanel = row.querySelector('.main-panel');
+        const videos = row.querySelectorAll('.topic-video');
+        const leftPanelContainer = row.querySelector('.left-panels');
 
-    mainPanel.addEventListener('click', () => {
-        const isBecomingVisible = !world.classList.contains('panels-visible');
-        world.classList.toggle('panels-visible');
+        mainPanel.addEventListener('click', () => {
+            const isBecomingVisible = !row.classList.contains('panels-visible');
+            
+            // If another row is active, close it first
+            if (activeRow && activeRow !== row) {
+                activeRow.classList.remove('panels-visible');
+                updateWires(activeRow, false);
+            }
 
-        if (isBecomingVisible) {
-            videoPlayer1.play();
-            videoPlayer2.play();
-        } else {
-            videoPlayer1.pause();
-            videoPlayer2.pause();
-            scale = 1;
-            applyTransform();
-            updateWires();
-        }
+            row.classList.toggle('panels-visible');
+
+            if (isBecomingVisible) {
+                videos.forEach(video => video.play());
+                focusOnRow(row);
+            } else {
+                videos.forEach(video => video.pause());
+                resetFocus();
+                updateWires(row, false);
+            }
+        });
+
+        // Listen for the animation to end to draw the wires
+        leftPanelContainer.addEventListener('transitionend', (event) => {
+            if (row.classList.contains('panels-visible') && event.propertyName === 'max-width') {
+                updateWires(row, true);
+            }
+        });
     });
 
+    // --- MOUSE WHEEL PANNING ---
     viewport.addEventListener('wheel', (event) => {
         event.preventDefault();
-        panY -= event.deltaY * panSpeed;
+        // Disable vertical panning when zoomed in on a topic
+        if (isZoomed) return;
+
+        panY -= event.deltaY;
+        
         const worldHeight = world.scrollHeight;
         const viewportHeight = viewport.clientHeight;
         const maxPanY = 0;
-        const minPanY = -(worldHeight * scale - viewportHeight);
+        const minPanY = -(worldHeight - viewportHeight);
 
         if (panY > maxPanY) panY = maxPanY;
         if (panY < minPanY) panY = minPanY;
@@ -93,12 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTransform();
     }, { passive: false });
 
-    leftPanelContainer.addEventListener('transitionend', onTransitionEnd);
-
+    // --- RESIZE HANDLER ---
     window.addEventListener('resize', () => {
-        if (world.classList.contains('panels-visible')) {
-            calculateAndApplyZoom();
-            updateWires();
+        if (isZoomed && activeRow) {
+            focusOnRow(activeRow);
         }
     });
 });
