@@ -1,121 +1,110 @@
-document.addEventListener('DOMContentLoaded', () => {
+/* Basic Setup */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+}
 
-    const world = document.getElementById('world');
-    const mainPanel = document.getElementById('mainPanel');
-    const videoPlayer = document.getElementById('video-player');
-    const asciiContainer = document.getElementById('ascii-content');
+#viewport {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-    // --- 1. ASCII ANIMATION SETUP ---
+/* The "world" is now a flex container */
+#world {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px; /* The space between panels when visible */
+    transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform-origin: center center;
+}
 
-    // For a real animation, you need frames. Since you don't have a source,
-    // I've created this sample rocket animation. You should replace this
-    // with your own frames, perhaps loaded from a JSON file.
-    const asciiFrames = [
-        `
-        /\\
-       /  \\
-      /    \\
-     |      |
-     |      |
-    /|      |\\
-   / |      | \\
-  /  |      |  \\
- |  /|      |\\  |
- | / |      | \\ |
- |/  |      |  \\|
- *------------*
- /    /\\    \\
-/    /  \\    \\
-*---*----*---*
-    `,
-        `
+/* --- Panel Styling (Now Proportional) --- */
+.panel {
+    height: 280px; /* Set a fixed height for all panels */
+    flex-shrink: 0; /* Prevent panels from shrinking */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Align content to the top */
+    padding: 15px;
+    box-sizing: border-box;
+    
+    background: linear-gradient(to bottom, #ffffff, #e0e0e0);
+    border: 1px solid #c0c0c0;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.15);
+    transform: translateZ(0); /* GPU layer fix */
+}
 
-        /\\
-       /  \\
-      /    \\
-     |      |
-    /|      |\\
-   / |      | \\
-  /  |      |  \\
- |  /|      |\\  |
- | / |      | \\ |
- |/  |      |  \\|
- *------------*
- /    /\\    \\
-/    /  \\    \\
-*---*----*---*
-    `,
-        `
-        /\\
-       /  \\
-      /    \\
-     |      |
-     |      |
-    /|      |\\
-   / |      | \\
-  /  |      |  \\
- |  /|      |\\  |
- | / |      | \\ |
- |/  |      |  \\|
- *------------*
-/炽/\\炽\\
-/    /  \\    \\
-*---*----*---*
-    `
-    ];
+.panel h2, .panel h3 {
+    width: 100%;
+    margin: 0 0 10px 0;
+    padding-bottom: 5px;
+    color: #333;
+    border-bottom: 1px solid #ccc;
+}
 
-    let animationInterval = null;
-    let currentFrame = 0;
+.main-panel {
+    position: relative;
+    width: 400px; /* The main panel can keep a fixed width */
+    cursor: pointer;
+    z-index: 20;
+}
 
-    function playAsciiAnimation() {
-        if (animationInterval) return; // Don't start if already running
+.main-panel .panel-tab {
+    position: absolute;
+    right: -30px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 80px;
+    background: linear-gradient(to right, #d0b084, #c0a074);
+    border-radius: 0 10px 10px 0;
+    box-shadow: 5px 3px 10px rgba(0,0,0,0.1);
+}
 
-        animationInterval = setInterval(() => {
-            asciiContainer.textContent = asciiFrames[currentFrame];
-            currentFrame = (currentFrame + 1) % asciiFrames.length;
-        }, 150); // Change 150ms to control animation speed
-    }
+/* --- Content Styling --- */
+video, pre {
+    display: block;
+    width: auto; /* Let the width be determined by the height and aspect ratio */
+    height: 100%;
+    border-radius: 8px;
+    background-color: #000;
+}
 
-    function stopAsciiAnimation() {
-        clearInterval(animationInterval);
-        animationInterval = null;
-    }
+pre {
+    color: #00ff00;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 8px; /* Adjust font-size to fit your art */
+    line-height: 1.0;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
 
-    // --- 2. DYNAMIC ZOOM-TO-FIT ---
+/* --- Hide/Show Animation --- */
+.video-panel, .ascii-panel {
+    max-width: 0;
+    padding: 0;
+    border-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-width 0.8s ease, padding 0.5s ease, opacity 0.5s ease, border-width 0.5s ease;
+}
 
-    function calculateAndApplyZoom() {
-        if (!world.classList.contains('panels-visible')) {
-            world.style.transform = 'scale(1)';
-            return;
-        }
-
-        const viewportWidth = window.innerWidth;
-        // Get the total width of all panels and gaps
-        const worldWidth = world.scrollWidth; 
-        
-        // Calculate the scale needed to fit the world in the viewport
-        // The 0.9 provides a 10% padding around the edges
-        const requiredScale = (viewportWidth / worldWidth) * 0.9;
-
-        world.style.transform = `scale(${requiredScale})`;
-    }
-
-    // --- 3. CLICK AND RESIZE HANDLERS ---
-
-    mainPanel.addEventListener('click', () => {
-        const isVisible = world.classList.toggle('panels-visible');
-
-        if (isVisible) {
-            videoPlayer.play();
-            playAsciiAnimation();
-        } else {
-            videoPlayer.pause();
-            stopAsciiAnimation();
-        }
-        
-        // We need to wait for the CSS transition to finish before calculating the zoom
-        setTimeout(calculateAndApplyZoom, 50); 
-    });
-
-    window.addEventListener('resize', calculateAndApplyZoom);
-});
+#world.panels-visible .video-panel,
+#world.panels-visible .ascii-panel {
+    max-width: 500px; /* Animate to a max-width; actual width is set by content */
+    padding: 15px;
+    border-width: 1px;
+    opacity: 1;
+}
