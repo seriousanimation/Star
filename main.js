@@ -1,11 +1,21 @@
-document.addEventListener('DOMContentLoaded', () => {
-
-    // CHANGE: Corrected the function name to match the one in your script.
+// --- FIX: We will initialize the background inside window.onload ---
+// This event waits for ALL content to load, including other scripts,
+// which guarantees the startGenerativeBG function will be available.
+window.onload = () => {
     if (typeof startGenerativeBG === 'function') {
         startGenerativeBG();
+        console.log("Generative background started successfully.");
     } else {
-        console.error("The generative background script did not provide the 'startGenerativeBG' function.");
+        console.error("CRITICAL ERROR: The 'startGenerativeBG' function was not found even after the window loaded. Please check the generativebackground.js file.");
     }
+};
+
+
+// --- The rest of your main script starts here, inside DOMContentLoaded ---
+document.addEventListener('DOMContentLoaded', () => {
+
+    // NOTE: The background initialization has been moved out of here.
+    // The rest of the script is exactly as it was.
 
     const viewport = document.getElementById('viewport');
     const world = document.getElementById('world');
