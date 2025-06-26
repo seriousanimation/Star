@@ -2,61 +2,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const world = document.getElementById('world');
     const mainPanel = document.getElementById('mainPanel');
-    const videoPlayer = document.getElementById('video-player');
-    // FIX: This ID now correctly points directly to the <pre> tag.
-    const asciiArtPreTag = document.getElementById('ascii-content');
-    // FIX: We now target the .left-panels container for the transition event.
+    // CHANGE: Select both video players by their new IDs
+    const videoPlayer1 = document.getElementById('video-player-1');
+    const videoPlayer2 = document.getElementById('video-player-2');
+    
     const leftPanelContainer = document.querySelector('.left-panels');
 
-    // --- 1. TRUE FRAME-BASED ANIMATION SETUP ---
+    // --- All ASCII Animation and Fetching code has been removed ---
 
-    const asciiURL = 'https://raw.githubusercontent.com/seriousanimation/Star/main/assets/ASCII/example2.html';
-    let animationInterval = null;
-    let animationFrames = [];
-    let currentFrame = 0;
-
-    function playAsciiAnimation() {
-        if (animationInterval || animationFrames.length === 0) return;
-
-        animationInterval = setInterval(() => {
-            // FIX: Directly set the textContent of the <pre> tag.
-            asciiArtPreTag.textContent = animationFrames[currentFrame];
-            currentFrame = (currentFrame + 1) % animationFrames.length;
-        }, 80);
-    }
-
-    function stopAsciiAnimation() {
-        clearInterval(animationInterval);
-        animationInterval = null;
-    }
-    
-    // --- 2. FETCH AND PARSE THE ANIMATION FILE ---
-    
-    fetch(asciiURL)
-        .then(response => response.text())
-        .then(htmlContent => {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = htmlContent;
-            const preTagFromFile = tempDiv.querySelector('pre');
-            if (!preTagFromFile) {
-                console.error("Could not find a <pre> tag in the fetched HTML.");
-                return;
-            }
-            const frameDelimiter = '\u001e';
-            animationFrames = preTagFromFile.textContent.split(frameDelimiter);
-            
-            // FIX: Directly set the textContent of our page's <pre> tag to the first frame.
-            asciiArtPreTag.textContent = animationFrames[0];
-            
-            console.log(`Successfully loaded ${animationFrames.length} animation frames.`);
-        })
-        .catch(error => {
-            console.error("Failed to fetch ASCII content:", error);
-            // FIX: Directly set the error message on the <pre> tag.
-            asciiArtPreTag.textContent = "Error loading content.";
-        });
-
-    // --- 3. EVENT HANDLERS ---
+    // --- EVENT HANDLERS ---
     
     function calculateAndApplyZoom() {
         const viewportWidth = window.innerWidth;
@@ -67,10 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function onTransitionEnd(event) {
-        // FIX: Ensure we only run this for the container's max-width transition.
         if (event.target === leftPanelContainer && event.propertyName === 'max-width') {
             calculateAndApplyZoom();
-            // We no longer need to remove the listener as it's specific.
         }
     }
 
@@ -79,16 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
         world.classList.toggle('panels-visible');
 
         if (isBecomingVisible) {
-            videoPlayer.play();
-            playAsciiAnimation();
+            // CHANGE: Play both videos
+            videoPlayer1.play();
+            videoPlayer2.play();
         } else {
-            videoPlayer.pause();
-            stopAsciiAnimation();
+            // CHANGE: Pause both videos
+            videoPlayer1.pause();
+            videoPlayer2.pause();
             world.style.transform = 'scale(1)';
         }
     });
 
-    // FIX: We attach the transitionend listener once and leave it.
     leftPanelContainer.addEventListener('transitionend', onTransitionEnd);
 
     window.addEventListener('resize', () => {
