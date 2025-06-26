@@ -19,6 +19,7 @@ body, html {
 
 /* The "world" is the main flex container */
 #world {
+    position: relative; /* Needed for positioning the SVG */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -27,9 +28,37 @@ body, html {
     transform-origin: center center;
 }
 
-/* --- Panel Styling (Proportional) --- */
+/* --- SVG Connector Wires --- */
+#connector-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10; /* Position behind panels */
+    overflow: visible; /* Allow paths to be drawn anywhere */
+}
+
+.connector-wire {
+    fill: none;
+    stroke: #555;
+    stroke-width: 3px;
+    stroke-linecap: round;
+    /* This is the magic for the "draw-on" animation */
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    transition: stroke-dashoffset 0.8s ease-in-out;
+}
+
+/* When panels are visible, draw the wires */
+#world.panels-visible .connector-wire {
+    stroke-dashoffset: 0;
+}
+
+
+/* --- Panel Styling --- */
 .panel {
-    height: 280px; /* Set a fixed height for all panels */
+    height: 280px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -42,6 +71,7 @@ body, html {
     border-radius: 15px;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 6px 6px rgba(0,0,0,0.15);
     transform: translateZ(0);
+    z-index: 20; /* Position panels in front of SVG wires */
 }
 
 .panel h2, .panel h3 {
@@ -50,13 +80,20 @@ body, html {
     padding-bottom: 5px;
     color: #333;
     border-bottom: 1px solid #ccc;
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+.main-panel p {
+    font-size: 1.2em;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .main-panel {
     position: relative;
     width: 400px;
     cursor: pointer;
-    z-index: 20;
 }
 
 .main-panel .panel-tab {
@@ -72,17 +109,22 @@ body, html {
 }
 
 /* --- Content Styling --- */
-/* CHANGE: Renamed #video-player to a generic video rule */
+/* CHANGE: New container to create the framing effect */
+.video-container {
+    width: 100%;
+    height: 100%; /* Fill remaining space */
+    overflow: hidden; /* Ensures video's rounded corners are visible */
+    border-radius: 8px;
+}
+
 .panel video {
     display: block;
     width: 100%;
     height: 100%;
-    border-radius: 8px;
     background-color: #000;
-    object-fit: cover; /* Ensures video fills the space without distortion */
+    object-fit: cover;
 }
 
-/* CHANGE: New rule to set the 4:3 aspect ratio for the second video panel */
 .video-panel-2 {
     width: 373px; /* 280px * (1024/768) = 373.33px */
 }
@@ -101,7 +143,6 @@ body, html {
     max-width: 500px; 
 }
 
-/* Make sure the video panels have a width to be revealed */
 .video-panel {
-    width: 500px; /* Or adjust to your first video's aspect ratio if needed */
+    width: 500px;
 }
