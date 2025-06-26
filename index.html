@@ -7,23 +7,20 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- The background canvas (functionality to be restored later if needed) -->
     <canvas id="bg-canvas"></canvas>
 
     <div id="viewport">
         <div id="world">
 
-            <!-- SVG for drawing connector wires behind the panels -->
             <svg id="connector-svg">
-                <!-- Wires for the first topic -->
                 <path id="wire1" class="connector-wire" d=""></path>
                 <path id="wire2" class="connector-wire" d=""></path>
-                <!-- CHANGE: New wires for the second topic -->
                 <path id="wire3" class="connector-wire" d=""></path>
                 <path id="wire4" class="connector-wire" d=""></path>
+                <path id="wire5" class="connector-wire" d=""></path>
+                <path id="wire6" class="connector-wire" d=""></path>
             </svg>
 
-            <!-- First Topic Row -->
             <div class="topic-row" id="topic-row-1">
                 <div class="left-panels">
                     <div class="panel video-panel">
@@ -33,13 +30,11 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="panel main-panel">
                     <h2>Introduction</h2>
                     <p>Salient Points</p>
                     <div class="panel-tab"></div>
                 </div>
-
                 <div class="right-panels">
                     <div class="panel video-panel-2">
                         <h3>Video</h3>
@@ -50,7 +45,6 @@
                 </div>
             </div>
 
-            <!-- CHANGE: Second topic is now a full, interactive row -->
             <div class="topic-row" id="topic-row-2">
                  <div class="left-panels">
                     <div class="panel video-panel">
@@ -60,17 +54,38 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="panel main-panel">
                     <h2>Next Topic</h2>
                     <p>Content for the second topic goes here.</p>
                 </div>
-
                 <div class="right-panels">
                     <div class="panel video-panel-2">
                         <h3>Video</h3>
                         <div class="video-container">
                             <video id="video-player-4" class="topic-video" src="https://raw.githubusercontent.com/seriousanimation/Star/main/assets/videos/video1.mp4" muted loop playsinline></video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="topic-row" id="topic-row-3">
+                 <div class="left-panels">
+                    <div class="panel video-panel">
+                        <h3>Video</h3>
+                        <div class="video-container">
+                            <video id="video-player-5" class="topic-video" src="https://raw.githubusercontent.com/seriousanimation/Star/main/assets/videos/video1.mp4" muted loop playsinline></video>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel main-panel">
+                    <h2>Next Topic 2</h2>
+                    <p>Content for the third topic goes here.</p>
+                </div>
+                <div class="right-panels">
+                    <div class="panel video-panel-2">
+                        <h3>Video</h3>
+                        <div class="video-container">
+                            <video id="video-player-6" class="topic-video" src="https://raw.githubusercontent.com/seriousanimation/Star/main/assets/videos/video1.mp4" muted loop playsinline></video>
                         </div>
                     </div>
                 </div>
