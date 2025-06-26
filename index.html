@@ -1,43 +1,32 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Panel Flow</title>
+    <title>Dynamic Panel Flow</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-
     <div id="viewport">
         <div id="world">
-            <div class="panel ascii-panel">
-                <div class="panel-content">
-                    <h3>ASCII Animation</h3>
-                    <pre id="ascii-content">Loading ASCII...</pre>
-                </div>
+            <div class="panel video-panel">
+                <h3>Video</h3>
+                <video id="video-player" src="https://raw.githubusercontent.com/seriousanimation/Star/main/assets/videos/video1.mp4" muted loop playsinline></video>
             </div>
-
 
             <div class="panel main-panel" id="mainPanel">
-                <div class="panel-content">
-                    <h2>Introduction</h2>
-                    <p>Text to Appear Here</p>
-                </div>
-                 <div class="panel-tab"></div>
+                <h2>Introduction</h2>
+                <p>Text to Appear Here</p>
+                <div class="panel-tab"></div>
             </div>
 
-
-            <div class="panel video-panel">
-                <div class="panel-content">
-                     <h3>Video</h3>
-                    <video id="video-player" controls muted loop playsinline>
-                        </video>
-                </div>
+            <div class="panel ascii-panel">
+                <h3>ASCII Animation</h3>
+                <pre id="ascii-content"></pre>
             </div>
         </div>
     </div>
-
 
     <script src="main.js"></script>
 </body>
