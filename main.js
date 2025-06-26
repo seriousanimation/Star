@@ -2,6 +2,7 @@ function startGenerativeBG() {
     // Implementation from your generativebackground.js file
 }
 window.onload = () => {
+    // This check is in case the background script fails to load.
     if (typeof startGenerativeBG === 'function') {
         startGenerativeBG();
     }
@@ -21,11 +22,23 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTopicIndex = 0;
     let isNavigating = false;
 
+    // --- MAIN TRANSFORM AND STATE FUNCTIONS ---
     function applyTransform() {
+        // We add a 'no-transition' class during instant pans to prevent animation
+        world.classList.add('no-transition');
+        world.style.transform = `translateY(${panY}px) scale(${scale})`;
+        // Force the browser to apply the style, then remove the class to re-enable transitions
+        world.offsetHeight; // This is a trick to trigger a browser repaint
+        world.classList.remove('no-transition');
+    }
+    
+    function applyAnimatedTransform() {
+        // This version applies the transform and relies on the CSS transition
         world.style.transform = `translateY(${panY}px) scale(${scale})`;
     }
 
     function updateWires(row, show = false) {
+        // ... (This function's internal logic is unchanged)
         const mainPanel = row.querySelector('.main-panel');
         const leftVideoPanel = row.querySelector('.video-panel');
         const rightVideoPanel = row.querySelector('.video-panel-2');
@@ -66,7 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const rowRect = row.getBoundingClientRect();
         const worldRect = world.getBoundingClientRect();
         panY = (viewport.clientHeight / 2) - (rowRect.top - worldRect.top + rowRect.height / 2);
-        applyTransform();
+        
+        const viewportWidth = viewport.clientWidth;
+        const rowWidth = row.scrollWidth;
+        scale = (viewportWidth / rowWidth) * 0.9;
+
+        applyAnimatedTransform();
     }
 
     function resetFocus() {
@@ -77,34 +95,52 @@ document.addEventListener('DOMContentLoaded', () => {
             activeRow = null;
         }
         scale = 1;
-        // CHANGE: Immediately apply the scale(1) transform. This ensures the zoom-out happens reliably.
-        applyTransform(); 
     }
     
     function navigateToTopic(index) {
         if (index < 0 || index >= topicRows.length) return;
+        
+        const wasZoomed = isZoomed;
+        if (wasZoomed) {
+            resetFocus();
+        }
 
         currentTopicIndex = index;
         const targetRow = topicRows[index];
-        const targetY = -targetRow.offsetTop;
-        
-        if (isZoomed) {
-            resetFocus();
+        const targetY = (viewport.clientHeight / 2) - (targetRow.offsetTop + targetRow.offsetHeight / 2);
+
+        // If we were zoomed, wait for the zoom-out to finish before panning.
+        // Otherwise, pan immediately.
+        if (wasZoomed) {
+             // First, apply the zoom-out while keeping the current pan
+            applyAnimatedTransform();
             setTimeout(() => {
                 panY = targetY;
-                applyTransform();
-            }, 800);
+                applyAnimatedTransform();
+            }, 500); // A shorter delay feels more responsive
         } else {
             panY = targetY;
-            applyTransform();
+            applyAnimatedTransform();
         }
     }
+    
+    // --- SETUP INITIAL STATE AND EVENT LISTENERS ---
+    
+    function setInitialPosition() {
+        currentTopicIndex = 0;
+        const initialRow = topicRows[0];
+        // Instantly pan to the first topic on page load without animation
+        panY = (viewport.clientHeight / 2) - (initialRow.offsetTop + initialRow.offsetHeight / 2);
+        applyTransform();
+    }
+    
+    // Call this once the page structure is ready
+    setInitialPosition();
 
     topicRows.forEach((row, index) => {
         const mainPanel = row.querySelector('.main-panel');
         const videos = row.querySelectorAll('.topic-video');
-        const leftPanelContainer = row.querySelector('.left-panels');
-
+        
         mainPanel.addEventListener('click', () => {
             const isBecomingVisible = !row.classList.contains('panels-visible');
             
@@ -126,12 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        leftPanelContainer.addEventListener('transitionend', (event) => {
+        row.addEventListener('transitionend', (event) => {
             if (row.classList.contains('panels-visible') && event.propertyName === 'max-width') {
-                const viewportWidth = viewport.clientWidth;
-                const rowWidth = row.scrollWidth;
-                scale = (viewportWidth / rowWidth) * 0.9;
-                applyTransform();
                 updateWires(row, true);
             }
         });
@@ -144,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const nextIndex = currentTopicIndex + direction;
         navigateToTopic(nextIndex);
         
-        setTimeout(() => { isNavigating = false; }, 1000);
+        setTimeout(() => { isNavigating = false; }, 800);
     }
 
     viewport.addEventListener('wheel', (event) => {
@@ -165,6 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', () => {
         if (isZoomed && activeRow) {
             focusOnRow(activeRow);
+        } else {
+            navigateToTopic(currentTopicIndex);
         }
     });
 });
