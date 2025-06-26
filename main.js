@@ -2,7 +2,6 @@ function startGenerativeBG() {
     // Implementation from your generativebackground.js file
 }
 window.onload = () => {
-    // This check is in case the background script fails to load.
     if (typeof startGenerativeBG === 'function') {
         startGenerativeBG();
     }
@@ -22,23 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTopicIndex = 0;
     let isNavigating = false;
 
-    // --- MAIN TRANSFORM AND STATE FUNCTIONS ---
     function applyTransform() {
-        // We add a 'no-transition' class during instant pans to prevent animation
-        world.classList.add('no-transition');
-        world.style.transform = `translateY(${panY}px) scale(${scale})`;
-        // Force the browser to apply the style, then remove the class to re-enable transitions
-        world.offsetHeight; // This is a trick to trigger a browser repaint
-        world.classList.remove('no-transition');
-    }
-    
-    function applyAnimatedTransform() {
-        // This version applies the transform and relies on the CSS transition
         world.style.transform = `translateY(${panY}px) scale(${scale})`;
     }
 
     function updateWires(row, show = false) {
-        // ... (This function's internal logic is unchanged)
         const mainPanel = row.querySelector('.main-panel');
         const leftVideoPanel = row.querySelector('.video-panel');
         const rightVideoPanel = row.querySelector('.video-panel-2');
@@ -73,19 +60,24 @@ document.addEventListener('DOMContentLoaded', () => {
         wireRight.classList.add('visible');
     }
 
-    function focusOnRow(row) {
-        isZoomed = true;
-        activeRow = row;
-        const rowRect = row.getBoundingClientRect();
-        const worldRect = world.getBoundingClientRect();
-        panY = (viewport.clientHeight / 2) - (rowRect.top - worldRect.top + rowRect.height / 2);
-        
+    // --- CHANGE: Reworked focus and zoom logic for stability ---
+
+    // This function now ONLY handles the zooming.
+    function applyZoomToFit(row) {
         const viewportWidth = viewport.clientWidth;
         const rowWidth = row.scrollWidth;
         scale = (viewportWidth / rowWidth) * 0.9;
-
-        applyAnimatedTransform();
+        applyTransform();
     }
+
+    // This function now ONLY handles the panning.
+    function panToRow(row) {
+        const rowRect = row.getBoundingClientRect();
+        // We calculate the pan relative to the viewport, not the world, for consistency.
+        panY = (viewport.clientHeight / 2) - rowRect.height / 2 - rowRect.top;
+        applyTransform();
+    }
+
 
     function resetFocus() {
         isZoomed = false;
@@ -95,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
             activeRow = null;
         }
         scale = 1;
+        // panY will be reset by the navigation function
     }
     
     function navigateToTopic(index) {
@@ -109,18 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetRow = topicRows[index];
         const targetY = (viewport.clientHeight / 2) - (targetRow.offsetTop + targetRow.offsetHeight / 2);
 
-        // If we were zoomed, wait for the zoom-out to finish before panning.
-        // Otherwise, pan immediately.
         if (wasZoomed) {
-             // First, apply the zoom-out while keeping the current pan
-            applyAnimatedTransform();
+            applyTransform(); // Apply zoom-out first
             setTimeout(() => {
                 panY = targetY;
-                applyAnimatedTransform();
-            }, 500); // A shorter delay feels more responsive
+                applyTransform(); // Then pan
+            }, 500);
         } else {
             panY = targetY;
-            applyAnimatedTransform();
+            applyTransform();
         }
     }
     
@@ -129,18 +119,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function setInitialPosition() {
         currentTopicIndex = 0;
         const initialRow = topicRows[0];
-        // Instantly pan to the first topic on page load without animation
+        world.classList.add('no-transition');
         panY = (viewport.clientHeight / 2) - (initialRow.offsetTop + initialRow.offsetHeight / 2);
         applyTransform();
+        world.offsetHeight;
+        world.classList.remove('no-transition');
     }
     
-    // Call this once the page structure is ready
-    setInitialPosition();
+    // Using a short timeout to ensure all elements are rendered before calculating position
+    setTimeout(setInitialPosition, 50);
 
     topicRows.forEach((row, index) => {
         const mainPanel = row.querySelector('.main-panel');
         const videos = row.querySelectorAll('.topic-video');
-        
+        const leftPanelContainer = row.querySelector('.left-panels');
+
         mainPanel.addEventListener('click', () => {
             const isBecomingVisible = !row.classList.contains('panels-visible');
             
@@ -149,21 +142,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateWires(activeRow, false);
             }
 
-            row.classList.toggle('panels-visible');
-
             if (isBecomingVisible) {
+                // --- Step 1: Pan to the row
+                panToRow(row);
+                // --- Step 2: Play videos and expand panels
                 videos.forEach(video => video.play());
-                focusOnRow(row);
+                row.classList.add('panels-visible');
+                isZoomed = true;
+                activeRow = row;
                 currentTopicIndex = index;
             } else {
+                // --- If closing, just reset everything
                 videos.forEach(video => video.pause());
                 resetFocus();
                 navigateToTopic(index);
             }
         });
 
-        row.addEventListener('transitionend', (event) => {
+        leftPanelContainer.addEventListener('transitionend', (event) => {
             if (row.classList.contains('panels-visible') && event.propertyName === 'max-width') {
+                // --- Step 3: Once panels are out, apply the final zoom
+                applyZoomToFit(row);
                 updateWires(row, true);
             }
         });
@@ -172,19 +171,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleNavigation(direction) {
         if (isNavigating) return;
         isNavigating = true;
-        
         const nextIndex = currentTopicIndex + direction;
         navigateToTopic(nextIndex);
-        
         setTimeout(() => { isNavigating = false; }, 800);
     }
 
     viewport.addEventListener('wheel', (event) => {
         event.preventDefault();
+        // Do not allow wheel navigation if a panel is open
+        if (isZoomed) return;
         handleNavigation(event.deltaY > 0 ? 1 : -1);
     }, { passive: false });
 
     window.addEventListener('keydown', (event) => {
+        // Do not allow key navigation if a panel is open
+        if (isZoomed) return;
         if (event.key === "ArrowDown") {
             event.preventDefault();
             handleNavigation(1);
@@ -196,7 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('resize', () => {
         if (isZoomed && activeRow) {
-            focusOnRow(activeRow);
+            panToRow(activeRow);
+            applyZoomToFit(activeRow);
         } else {
             navigateToTopic(currentTopicIndex);
         }
